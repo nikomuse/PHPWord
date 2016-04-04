@@ -18,6 +18,7 @@
 namespace PhpOffice\PhpWord\Writer\Word2007\Part;
 
 use PhpOffice\PhpWord\Element\Chart as ChartElement;
+use PhpOffice\PhpWord\Style\Chart as ChartStyle;
 use PhpOffice\PhpWord\Shared\XMLWriter;
 
 /**
@@ -106,6 +107,11 @@ class Chart extends AbstractPart
         $xmlWriter->writeElementBlock('c:autoTitleDeleted', 'val', 1);
 
         $this->writePlotArea($xmlWriter);
+        
+        $style = $this->element->getStyle();
+        if ($style->hasLegend()) {
+            $this->writeLegend($xmlWriter, $style->getLegendPosition());
+        }
 
         $xmlWriter->endElement(); // c:chart
     }
@@ -144,7 +150,7 @@ class Chart extends AbstractPart
             $xmlWriter->writeElementBlock('c:grouping', 'val', 'standard');
         }
         if (isset($this->options['hole'])) {
-            $xmlWriter->writeElementBlock('c:holeSize', 'val', $this->options['hole']);
+            $xmlWriter->writeElementBlock('c:holeSize', 'val', $style->getOption('hole') ? $style->getOption('hole') : $this->options['hole']);
         }
         if (isset($this->options['bar'])) {
             $xmlWriter->writeElementBlock('c:barDir', 'val', $this->options['bar']); // bar|col
@@ -178,6 +184,21 @@ class Chart extends AbstractPart
     }
 
     /**
+     * Write chart legend
+     * 
+     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
+     * @param string $position
+     */
+    private function writeLegend(XMLWriter $xmlWriter, $position)
+    {
+        $xmlWriter->startElement('c:legend');
+        $xmlWriter->writeElementBlock('c:legendPos', 'val', $position);
+        $xmlWriter->writeElement('c:layout');
+        $xmlWriter->writeElementBlock('c:overlay', 'val', '0');
+        $xmlWriter->endElement(); // c:legend
+    }
+
+    /**
      * Write series.
      *
      * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
@@ -186,6 +207,7 @@ class Chart extends AbstractPart
      */
     private function writeSeries(XMLWriter $xmlWriter, $scatter = false)
     {
+        $style = $this->element->getStyle();
         $series = $this->element->getSeries();
 
         $index = 0;
@@ -197,6 +219,10 @@ class Chart extends AbstractPart
 
             $xmlWriter->writeElementBlock('c:idx', 'val', $index);
             $xmlWriter->writeElementBlock('c:order', 'val', $index);
+
+            if ($style->hasDataLabels()) {
+                $this->writeDataLabels($xmlWriter);
+            }
 
             if (isset($this->options['scatter'])) {
                 $this->writeShape($xmlWriter);
@@ -214,6 +240,37 @@ class Chart extends AbstractPart
             $index++;
         }
 
+    }
+    
+    /**
+     * Write data labels
+     * 
+     * @param \PhpOffice\PhpWord\Shared\XMLWriter $xmlWriter
+     */
+    private function writeDataLabels(XMLWriter $xmlWriter) {
+        $style = $this->element->getStyle();
+        $xmlWriter->startElement('c:dLbls');
+        if ($style->hasDataLabels() && $style->getDataLabelsOrientation() != ChartStyle::DATA_LABELS_ORIENTATION_NORMAL) {
+            $angle = ChartStyle::DATA_LABELS_ORIENTATION_RIGHT ? '-5400000' : '5400000';
+            $xmlWriter->startElement('c:txPr');
+            $xmlWriter->writeElementBlock('a:bodyPr', array('rot' => $angle, 'vert' => 'horz'));
+            $xmlWriter->writeElement('a:lstStyle');
+            $xmlWriter->startElement('a:p');
+            $xmlWriter->startElement('a:pPr');
+            $xmlWriter->writeElement('a:defRPr');
+            $xmlWriter->endElement(); // a:pPr
+            $xmlWriter->writeElementBlock('a:endParaRPr', 'lang', 'fr-FR');
+            $xmlWriter->endElement(); // a:p
+            $xmlWriter->endElement(); // c:txPr
+        }
+        $xmlWriter->writeElementBlock('c:showLegendKey', 'val', '0');
+        $xmlWriter->writeElementBlock('c:showVal', 'val', '1');
+        $xmlWriter->writeElementBlock('c:showCatName', 'val', 'b');
+        $xmlWriter->writeElementBlock('c:showSerName', 'val', '0');
+        $xmlWriter->writeElementBlock('c:showPercent', 'val', 'b');
+        $xmlWriter->writeElementBlock('c:showBubbleSize', 'val', '0');
+        $xmlWriter->writeElementBlock('c:showLeaderLines', 'val', '1');
+        $xmlWriter->endElement(); // c:dLbls
     }
 
     /**
@@ -264,6 +321,7 @@ class Chart extends AbstractPart
      */
     private function writeAxis(XMLWriter $xmlWriter, $type)
     {
+        $style = $this->element->getStyle();
         $types = array(
             'cat' => array('c:catAx', 1, 'b', 2),
             'val' => array('c:valAx', 2, 'l', 1),
@@ -279,12 +337,16 @@ class Chart extends AbstractPart
 
         if (isset($this->options['axes'])) {
             $xmlWriter->writeElementBlock('c:delete', 'val', 0);
-            $xmlWriter->writeElementBlock('c:majorTickMark', 'val', 'none');
+            $xmlWriter->writeElementBlock('c:majorTickMark', 'val', $style->getMajorTickMark());
             $xmlWriter->writeElementBlock('c:minorTickMark', 'val', 'none');
-            $xmlWriter->writeElementBlock('c:tickLblPos', 'val', 'none'); // nextTo
+            if ($style->showAxisLabels()) {
+                $xmlWriter->writeElementBlock('c:tickLblPos', 'val', 'nextTo');
+            } else {
+                $xmlWriter->writeElementBlock('c:tickLblPos', 'val', 'none');
+            }
             $xmlWriter->writeElementBlock('c:crosses', 'val', 'autoZero');
         }
-        if (isset($this->options['radar'])) {
+        if (isset($this->options['radar']) || ($type == "cat" && $style->showGridX()) || ($type == "val" && $style->showGridY())) {
             $xmlWriter->writeElement('c:majorGridlines');
         }
 
