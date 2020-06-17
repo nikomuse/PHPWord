@@ -46,7 +46,7 @@ foreach($columns as $th) {
 for ($i = 1; $i <= 8; $i++) {
     $table->addRow();
     foreach($columns as $index => $col) {
-        $table->addCell()->addText(htmlspecialchars("Cell {$i}"));
+        $table->addCell()->addText(htmlspecialchars("Cell {$index}:{$i}"));
     }
 //    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
 //    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));

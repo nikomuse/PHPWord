@@ -18,4 +18,8 @@ phpword.ini
 /.buildpath
 /.project
 nbproject
+<<<<<<< HEAD
 deploy
+=======
+.test
+>>>>>>> 62cf23ce85d12182239eb561f9bf01cce87a18c4
