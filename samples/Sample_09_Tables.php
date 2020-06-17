@@ -27,26 +27,33 @@ $section->addTextBreak(1);
 $section->addText(htmlspecialchars('Fancy table'), $header);
 
 $styleTable = array('borderSize' => 6, 'borderColor' => '006699', 'cellMargin' => 80);
-$styleFirstRow = array('borderBottomSize' => 18, 'borderBottomColor' => '0000FF', 'bgColor' => '66BBFF');
+$styleFirstRow = array('borderBottomSize' => 18, 'borderBottomColor' => '000000', 'bgColor' => 'cccccc');
 $styleCell = array('valign' => 'center');
 $styleCellBTLR = array('valign' => 'center', 'textDirection' => \PhpOffice\PhpWord\Style\Cell::TEXT_DIR_BTLR);
 $fontStyle = array('bold' => true, 'align' => 'center');
 $phpWord->addTableStyle('Fancy Table', $styleTable, $styleFirstRow);
 $table = $section->addTable('Fancy Table');
-$table->addRow(900);
-$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 1'), $fontStyle);
-$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 2'), $fontStyle);
-$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 3'), $fontStyle);
-$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 4'), $fontStyle);
-$table->addCell(500, $styleCellBTLR)->addText(htmlspecialchars('Row 5'), $fontStyle);
+$table->addRow();
+$columns = array('', 'Janv', 'Fev', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Sept', 'Oct', 'Nov', 'Déc', 'TOTAL');
+foreach($columns as $th) {
+    $table->addCell(null, $styleCell)->addText(htmlspecialchars($th), $fontStyle);
+}
+//$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 1'), $fontStyle);
+//$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 2'), $fontStyle);
+//$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 3'), $fontStyle);
+//$table->addCell(2000, $styleCell)->addText(htmlspecialchars('Row 4'), $fontStyle);
+//$table->addCell(500, $styleCellBTLR)->addText(htmlspecialchars('Row 5'), $fontStyle);
 for ($i = 1; $i <= 8; $i++) {
     $table->addRow();
-    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
-    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
-    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
-    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
-    $text = (0== $i % 2) ? 'X' : '';
-    $table->addCell(500)->addText(htmlspecialchars($text));
+    foreach($columns as $index => $col) {
+        $table->addCell()->addText(htmlspecialchars("Cell {$i}"));
+    }
+//    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
+//    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
+//    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
+//    $table->addCell(2000)->addText(htmlspecialchars("Cell {$i}"));
+//    $text = (0== $i % 2) ? 'X' : '';
+//    $table->addCell(500)->addText(htmlspecialchars($text));
 }
 
 // 3. colspan (gridSpan) and rowspan (vMerge)
@@ -54,7 +61,7 @@ for ($i = 1; $i <= 8; $i++) {
 $section->addPageBreak();
 $section->addText(htmlspecialchars('Table with colspan and rowspan'), $header);
 
-$styleTable = array('borderSize' => 6, 'borderColor' => '999999');
+$styleTable = array('borderSize' => 6, 'borderColor' => '999999', 'width' => 100);
 $cellRowSpan = array('vMerge' => 'restart', 'valign' => 'center', 'bgColor' => 'FFFF00');
 $cellRowContinue = array('vMerge' => 'continue');
 $cellColSpan = array('gridSpan' => 2, 'valign' => 'center');

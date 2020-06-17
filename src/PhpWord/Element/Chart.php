@@ -65,7 +65,11 @@ class Chart extends AbstractElement
     public function __construct($type, $categories, $values, $style = null)
     {
         $this->setType($type);
-        $this->addSeries($categories, $values);
+        if (isset($values['name']) && isset($values['values'])) {
+            $this->addSeries($categories, $values['values'], $values['name']);
+        } else {
+            $this->addSeries($categories, $values);
+        }
         $this->style = $this->setNewStyle(new ChartStyle(), $style, true);
     }
 
@@ -96,11 +100,12 @@ class Chart extends AbstractElement
      *
      * @param array $categories
      * @param array $values
+     * @param string $serie_name
      * @return void
      */
-    public function addSeries($categories, $values)
+    public function addSeries($categories, $values, $serie_name='')
     {
-        $this->series[] = array('categories' => $categories, 'values' => $values);
+        $this->series[] = array('categories' => $categories, 'values' => $values, 'name' => $serie_name);
     }
 
     /**

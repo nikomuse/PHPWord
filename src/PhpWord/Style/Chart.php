@@ -64,6 +64,18 @@ class Chart extends AbstractStyle
      * @var bool
      */
     private $gridX = false;
+    /**
+     * Show for Y-Axis
+     *
+     * @var bool
+     */
+    private $axisY = true;
+    /**
+     * Show for X-Axis
+     *
+     * @var bool
+     */
+    private $axisX = true;
 
     /**
      * Options
@@ -98,14 +110,84 @@ class Chart extends AbstractStyle
      *
      * @var string
      */
-    private $data_labels_orientation = '';    
+    private $data_labels_orientation = '';
+    
+    /**
+     * Data labels show value
+     *
+     * @var boolean
+     */
+    private $data_labels_showValue = true;
+    
+    /**
+     * Data labels show category names
+     *
+     * @var boolean
+     */
+    private $data_labels_showCategoryName = false;
+    
+    /**
+     * Data labels show series name
+     *
+     * @var boolean
+     */
+    private $data_labels_showSeriesName = false;
+    
+    /**
+     * Data labels show percent
+     *
+     * @var boolean
+     */
+    private $data_labels_showPercent = false;
+    
+    /**
+     * Data label format
+     *
+     * @var string
+     */
+    private $data_labels_format = '';
+    
+    /**
+     * Data labels euro without decimal format
+     * 
+     * @var string
+     */
+    const DATA_LABELS_FORMAT_EUROS_NO_DECIMAL = "#,##0\ €";
+    
+    /**
+     * Data labels percent without decimal format
+     * 
+     * @var string
+     */
+    const DATA_LABELS_FORMAT_PERCENT_NO_DECIMAL = "#,##0\ %";
+    
+    /**
+     * Logarithmic category axis base
+     *
+     * @var string
+     */
+    private $logarithmic_category_axis_base = '';
+    
+    /**
+     * Logarithmic value axis base
+     *
+     * @var string
+     */
+    private $logarithmic_value_axis_base = '';
     
     /**
      * Major tick mark
      *
      * @var string
      */
-    private $major_tick_mark = '';    
+    private $major_tick_mark = '';
+    
+    /**
+     * Major tick mark
+     *
+     * @var string
+     */
+    private $major_grid_lines_alpha = '100000';
     
     /**
      * Legend top position
@@ -315,6 +397,46 @@ class Chart extends AbstractStyle
         $this->gridX = $this->setBoolVal($value, $this->gridX);
         return $this;
     }
+    /**
+     * Show X-Axis
+     *
+     * @return bool
+     */
+    public function showAxisX()
+    {
+        return $this->axisX;
+    }
+    /**
+     * Set show for X-Axis
+     *
+     * @param bool $value
+     * @return self
+     */
+    public function setShowAxisX($value = true)
+    {
+        $this->axisX = $this->setBoolVal($value, $this->axisX);
+        return $this;
+    }
+    /**
+     * Show Y-Axis
+     *
+     * @return bool
+     */
+    public function showAxisY()
+    {
+        return $this->axisY;
+    }
+    /**
+     * Set show for Y-Axis
+     *
+     * @param bool $value
+     * @return self
+     */
+    public function setShowAxisY($value = true)
+    {
+        $this->axisY = $this->setBoolVal($value, $this->axisY);
+        return $this;
+    }
     
     /**
      * Add a legend
@@ -393,6 +515,166 @@ class Chart extends AbstractStyle
     public function getMajorTickMark()
     {
         return $this->major_tick_mark;
+    }
+
+    /**
+     * Set major grid lines alpha
+     *
+     * @param int $alpha (0-100)
+     */
+    public function setMajorGridLinesAlpha($alpha)
+    {
+        $this->major_grid_lines_alpha = (string)((int)$alpha*1000);
+    }
+
+    /**
+     * Get major grid lines alpha
+     *
+     * @return string
+     */
+    public function getMajorGridLinesAlpha()
+    {
+        return $this->major_grid_lines_alpha;
+    }
+
+    /**
+     * Set data labels 'show value' property
+     *
+     * @param boolean $show
+     */
+    public function setDataLabelsShowValue($show)
+    {
+        $this->data_labels_showValue = (bool)$show;
+    }
+
+    /**
+     * Get data labels 'show value' property
+     *
+     * @return string
+     */
+    public function getDataLabelsShowValue()
+    {
+        return $this->data_labels_showValue;
+    }
+
+    /**
+     * Set data labels 'show category name' property
+     *
+     * @param boolean $show
+     */
+    public function setDataLabelsShowCategoryName($show)
+    {
+        $this->data_labels_showCategoryName = (bool)$show;
+    }
+
+    /**
+     * Get data labels 'show category name' property
+     *
+     * @return string
+     */
+    public function getDataLabelsShowCategoryName()
+    {
+        return $this->data_labels_showCategoryName;
+    }
+
+    /**
+     * Set data labels 'show series name' property
+     *
+     * @param boolean $show
+     */
+    public function setDataLabelsShowSeriesName($show)
+    {
+        $this->data_labels_showSeriesName = (bool)$show;
+    }
+
+    /**
+     * Get data labels 'show series name' property
+     *
+     * @return string
+     */
+    public function getDataLabelsShowSeriesName()
+    {
+        return $this->data_labels_showSeriesName;
+    }
+
+    /**
+     * Set data labels 'show percent' property
+     *
+     * @param boolean $show
+     */
+    public function setDataLabelsShowPercent($show)
+    {
+        $this->data_labels_showPercent = (bool)$show;
+    }
+
+    /**
+     * Get data labels 'show percent' property
+     *
+     * @return string
+     */
+    public function getDataLabelsShowPercent()
+    {
+        return $this->data_labels_showPercent;
+    }
+
+    /**
+     * Set data labels format
+     *
+     * @param string $format
+     */
+    public function setDataLabelsFormat($format)
+    {
+        $this->data_labels_format = $format;
+    }
+
+    /**
+     * Get data labels format
+     *
+     * @return string
+     */
+    public function getDataLabelsFormat()
+    {
+        return $this->data_labels_format;
+    }
+
+    /**
+     * Set logarithmic category axis base
+     *
+     * @param string $base
+     */
+    public function setLogarithmicCategoryAxis($base)
+    {
+        $this->logarithmic_category_axis_base = $base;
+    }
+
+    /**
+     * Get logarithmic category axis base
+     *
+     * @return string
+     */
+    public function getLogarithmicCategoryAxis()
+    {
+        return $this->logarithmic_category_axis_base;
+    }
+
+    /**
+     * Set logarithmic value axis base
+     *
+     * @param string $base
+     */
+    public function setLogarithmicValueAxis($base)
+    {
+        $this->logarithmic_value_axis_base = $base;
+    }
+
+    /**
+     * Get logarithmic value axis base
+     *
+     * @return string
+     */
+    public function getLogarithmicValueAxis()
+    {
+        return $this->logarithmic_value_axis_base;
     }
 
     /**

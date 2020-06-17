@@ -209,16 +209,32 @@ class Chart extends AbstractPart
     {
         $style = $this->element->getStyle();
         $series = $this->element->getSeries();
-
         $index = 0;
         foreach ($series as $seriesItem) {
             $categories = $seriesItem['categories'];
             $values = $seriesItem['values'];
+            $name = $seriesItem['name'];
 
             $xmlWriter->startElement('c:ser');
 
             $xmlWriter->writeElementBlock('c:idx', 'val', $index);
             $xmlWriter->writeElementBlock('c:order', 'val', $index);
+            
+            if ($name) {
+                $xmlWriter->startElement('c:tx');
+                $xmlWriter->startElement('c:strRef');
+                $xmlWriter->startElement('c:strCache');
+                $xmlWriter->writeElementBlock('c:ptCount', 'val', 1);
+                $xmlWriter->startElement('c:pt');                
+                $xmlWriter->writeAttribute('idx', 0);
+                $xmlWriter->startElement('c:v');
+                $xmlWriter->text($name);
+                $xmlWriter->endElement(); // c:v
+                $xmlWriter->endElement(); // c:pt
+                $xmlWriter->endElement(); // c:strCache
+                $xmlWriter->endElement(); // c:strRef
+                $xmlWriter->endElement(); // c:tx
+            }
 
             if ($style->hasDataLabels()) {
                 $this->writeDataLabels($xmlWriter);
@@ -263,11 +279,14 @@ class Chart extends AbstractPart
             $xmlWriter->endElement(); // a:p
             $xmlWriter->endElement(); // c:txPr
         }
+        if ($style->getDataLabelsFormat()) {
+            $xmlWriter->writeElementBlock('c:numFmt', array('formatCode' => $style->getDataLabelsFormat(), 'sourceLinked' => '0'));
+        }
         $xmlWriter->writeElementBlock('c:showLegendKey', 'val', '0');
-        $xmlWriter->writeElementBlock('c:showVal', 'val', '1');
-        $xmlWriter->writeElementBlock('c:showCatName', 'val', 'b');
-        $xmlWriter->writeElementBlock('c:showSerName', 'val', '0');
-        $xmlWriter->writeElementBlock('c:showPercent', 'val', 'b');
+        $xmlWriter->writeElementBlock('c:showVal', 'val', $style->getDataLabelsShowValue() ? '1' : '0');
+        $xmlWriter->writeElementBlock('c:showCatName', 'val', $style->getDataLabelsShowCategoryName() ? '1' : '0');
+        $xmlWriter->writeElementBlock('c:showSerName', 'val', $style->getDataLabelsShowSeriesName() ? '1' : '0');
+        $xmlWriter->writeElementBlock('c:showPercent', 'val', $style->getDataLabelsShowPercent() ? '1' : '0');
         $xmlWriter->writeElementBlock('c:showBubbleSize', 'val', '0');
         $xmlWriter->writeElementBlock('c:showLeaderLines', 'val', '1');
         $xmlWriter->endElement(); // c:dLbls
@@ -293,6 +312,15 @@ class Chart extends AbstractPart
 
         $xmlWriter->startElement($itemType);
         $xmlWriter->startElement($itemLit);
+        
+        if ($type == 'val') {
+            $xmlWriter->startElement('c:formatCode');
+            $xmlWriter->text('General');
+            $xmlWriter->endElement(); // c:formatCode
+        }
+        if (in_array($type, array('cat', 'val'))) {
+            $xmlWriter->writeElementBlock('c:ptCount', 'val', count($values));
+        }
 
         $index = 0;
         foreach ($values as $value) {
@@ -334,9 +362,16 @@ class Chart extends AbstractPart
         $xmlWriter->writeElementBlock('c:axPos', 'val', $axisPos);
         $xmlWriter->writeElementBlock('c:crossAx', 'val', $axisCross);
         $xmlWriter->writeElementBlock('c:auto', 'val', 1);
-
+        
+        $deleteValue = 0;
+        if ($type == 'val' && !$style->showAxisY()) {
+            $deleteValue = 1;
+        } elseif ($type == 'cat' && !$style->showAxisX()) {
+            $deleteValue = 1;
+        }
+        
         if (isset($this->options['axes'])) {
-            $xmlWriter->writeElementBlock('c:delete', 'val', 0);
+            $xmlWriter->writeElementBlock('c:delete', 'val', $deleteValue);
             $xmlWriter->writeElementBlock('c:majorTickMark', 'val', $style->getMajorTickMark());
             $xmlWriter->writeElementBlock('c:minorTickMark', 'val', 'none');
             if ($style->showAxisLabels()) {
@@ -347,10 +382,33 @@ class Chart extends AbstractPart
             $xmlWriter->writeElementBlock('c:crosses', 'val', 'autoZero');
         }
         if (isset($this->options['radar']) || ($type == "cat" && $style->showGridX()) || ($type == "val" && $style->showGridY())) {
-            $xmlWriter->writeElement('c:majorGridlines');
+            if ($style->getMajorGridLinesAlpha() == '100000') {
+                $xmlWriter->writeElement('c:majorGridlines');
+            } else {
+                $xmlWriter->startElement('c:majorGridlines');
+                if (!$deleteValue) {
+                    $xmlWriter->startElement('c:spPr');
+                    $xmlWriter->startElement('a:ln');
+                    $xmlWriter->startElement('a:solidFill');
+                }
+                $xmlWriter->startElement('a:schemeClr');
+                $xmlWriter->writeAttribute('val', 'bg1');
+                $xmlWriter->writeElementBlock('a:lumMod', 'val', $style->getMajorGridLinesAlpha());                
+                $xmlWriter->endElement(); // a:schemeClr
+                $xmlWriter->endElement(); // a:solidFill
+                $xmlWriter->endElement(); // a:ln
+                $xmlWriter->endElement(); // c:spPr
+                $xmlWriter->endElement(); // c:majorGridlines
+            }
         }
 
         $xmlWriter->startElement('c:scaling');
+        if ($type == 'cat' && $style->getLogarithmicCategoryAxis()) {
+            $xmlWriter->writeElementBlock('c:logBase', 'val', $style->getLogarithmicCategoryAxis());
+        }
+        if ($type == 'val' && $style->getLogarithmicValueAxis()) {
+            $xmlWriter->writeElementBlock('c:logBase', 'val', $style->getLogarithmicValueAxis());
+        }
         $xmlWriter->writeElementBlock('c:orientation', 'val', 'minMax');
         $xmlWriter->endElement(); // c:scaling
 
