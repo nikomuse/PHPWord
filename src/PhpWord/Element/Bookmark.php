@@ -17,7 +17,7 @@
 
 namespace PhpOffice\PhpWord\Element;
 
-use PhpOffice\PhpWord\Shared\String;
+use PhpOffice\PhpWord\Shared\StringUtil;
 use PhpOffice\PhpWord\Style;
 
 /**
@@ -47,7 +47,7 @@ class Bookmark extends AbstractElement
     public function __construct($name)
     {
 
-        $this->name = String::toUTF8($name);
+        $this->name = StringUtil::toUTF8($name);
         return $this;
     }
 
